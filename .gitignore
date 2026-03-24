@@ -1,0 +1,15 @@
+.env
+*.pyc
+__pycache__/
+birthday_notify.log*
+employees.csv
+.DS_Store
+venv/
+.venv/
+target/
+data/
+sync/done/
+*.class
+.claude/
+*.log
+.mvn/wrapper/maven-wrapper.jar
