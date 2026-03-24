@@ -15,8 +15,8 @@ COPY src/ ./src/
 COPY --from=frontend-build /app/frontend/dist/ ./src/main/resources/static/
 RUN mvn package -DskipTests -q
 
-# Stage 3: Runtime
-FROM eclipse-temurin:17-jre-alpine
+# Stage 3: Runtime (slim вместо alpine — поддерживает arm64/amd64)
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=backend-build /app/target/*.jar app.jar
 COPY src/main/resources/calendar.json ./calendar.json
