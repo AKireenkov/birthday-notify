@@ -60,6 +60,11 @@ export default function EmployeeModal({ open, employee, onSave, onSaveAndAddAnot
     }
   };
 
+  // Format date for display label
+  const birthDateLabel = form.birthDate
+    ? `Дата рождения`
+    : 'Дата рождения';
+
   return (
     <Modal
       open={open}
@@ -76,20 +81,24 @@ export default function EmployeeModal({ open, employee, onSave, onSaveAndAddAnot
           onChange={handleChange('fullName')}
           error={errors.fullName}
           block={true}
-          size={48}
+          size={56}
           autoFocus
         />
         <Gap size={16} />
 
-        <Input
-          label="Дата рождения"
-          type="date"
-          value={form.birthDate}
-          onChange={handleChange('birthDate')}
-          error={errors.birthDate}
-          block={true}
-          size={48}
-        />
+        <div className="date-input-wrapper">
+          <label className="date-input-label">Дата рождения</label>
+          <input
+            type="date"
+            className="date-input-native"
+            value={form.birthDate}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, birthDate: e.target.value }));
+              if (errors.birthDate) setErrors((er) => ({ ...er, birthDate: undefined }));
+            }}
+          />
+          {errors.birthDate && <div className="date-input-error">{errors.birthDate}</div>}
+        </div>
         <Gap size={16} />
 
         <Input
@@ -98,7 +107,7 @@ export default function EmployeeModal({ open, employee, onSave, onSaveAndAddAnot
           value={form.position}
           onChange={handleChange('position')}
           block={true}
-          size={48}
+          size={56}
         />
         <Gap size={16} />
 
@@ -108,20 +117,22 @@ export default function EmployeeModal({ open, employee, onSave, onSaveAndAddAnot
           value={form.department}
           onChange={handleChange('department')}
           block={true}
-          size={48}
+          size={56}
         />
       </Modal.Content>
       <Modal.Footer>
         <div className="modal-footer-buttons">
-          <Button view="accent" size={48} onClick={handleOk} block>
-            {isEdit ? 'Сохранить' : 'Добавить'}
-          </Button>
-          {!isEdit && (
-            <Button view="secondary" size={48} onClick={handleSaveAndAdd} block>
-              Сохранить и добавить ещё
+          <div className="modal-footer-row">
+            <Button view="accent" size={48} onClick={handleOk} block>
+              {isEdit ? 'Сохранить' : 'Добавить'}
             </Button>
-          )}
-          <Button view="transparent" size={48} onClick={onCancel} block>
+            {!isEdit && (
+              <Button view="secondary" size={48} onClick={handleSaveAndAdd} block>
+                Сохранить и добавить ещё
+              </Button>
+            )}
+          </div>
+          <Button view="outlined" size={48} onClick={onCancel} block>
             Отмена
           </Button>
         </div>
