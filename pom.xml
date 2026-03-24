@@ -11,8 +11,8 @@
 	<groupId>com.birthday</groupId>
 	<artifactId>notify</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>birthday-notify</name>
-	<description>Birthday notification service with REST API and web UI</description>
+	<name>alfa-birthday</name>
+	<description>Alfa Birthday — система мониторинга дней рождения сотрудников</description>
 
 	<properties>
 		<java.version>17</java.version>
@@ -26,10 +26,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

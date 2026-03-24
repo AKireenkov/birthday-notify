@@ -108,63 +108,77 @@ public class EmailService {
 
         StringBuilder sb = new StringBuilder();
         sb.append("<!DOCTYPE html><html><head><meta charset='utf-8'></head>");
-        sb.append("<body style='font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;background:#f5f7fa;'>");
+        sb.append("<body style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;max-width:700px;margin:0 auto;padding:0;background:#f5f5f5;'>");
 
-        // Header
-        sb.append("<div style='background:white;border-radius:12px;padding:24px;margin-bottom:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);'>");
-        sb.append("<h1 style='color:#2c3e50;margin:0 0 8px 0;'>\uD83C\uDF82 Дни рождения сотрудников</h1>");
-        sb.append("<p style='color:#7f8c8d;margin:0;'>Рассылка от ")
+        // Header — blue gradient matching Ant Design web app
+        sb.append("<div style='background:linear-gradient(135deg,#1677ff 0%,#4096ff 100%);padding:28px 24px;text-align:center;border-radius:0 0 12px 12px;'>");
+        sb.append("<h1 style='color:#ffffff;margin:0 0 6px 0;font-size:22px;font-weight:600;'>\uD83C\uDF82 Alfa Birthday</h1>");
+        sb.append("<p style='color:rgba(255,255,255,0.85);margin:0;font-size:14px;'>Рассылка от ")
                 .append(today.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
                 .append("</p></div>");
+
+        sb.append("<div style='padding:20px;'>");
 
         for (Map.Entry<LocalDate, List<Employee>> entry : birthdays.entrySet()) {
             LocalDate date = entry.getKey();
             List<Employee> emps = entry.getValue();
 
-            // Section label: today / tomorrow / weekday
+            // Section colors matching web app palette
             String sectionLabel;
-            String sectionColor;
+            String borderColor;
+            String headerBg;
+            String headerColor;
+            String badgeBg;
             if (date.equals(today)) {
-                sectionLabel = "\uD83C\uDF1F Сегодня";
-                sectionColor = "#e74c3c";
+                sectionLabel = "\uD83C\uDF89 Сегодня";
+                borderColor = "#fa541c";
+                headerBg = "#fa541c";
+                headerColor = "#ffffff";
+                badgeBg = "#fff1b8";
             } else if (date.equals(tomorrow)) {
                 sectionLabel = "\uD83D\uDD14 Завтра";
-                sectionColor = "#f39c12";
+                borderColor = "#1677ff";
+                headerBg = "#1677ff";
+                headerColor = "#ffffff";
+                badgeBg = "#e6f4ff";
             } else {
-                // Weekend/holiday days in the extended window
                 int dow = date.getDayOfWeek().getValue();
                 sectionLabel = "\uD83D\uDCC5 " + WEEKDAYS_RU[dow];
-                sectionColor = "#8e44ad";
+                borderColor = "#722ed1";
+                headerBg = "#722ed1";
+                headerColor = "#ffffff";
+                badgeBg = "#f9f0ff";
             }
 
-            sb.append("<div style='background:white;border-radius:12px;padding:20px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:4px solid ").append(sectionColor).append(";'>");
+            sb.append("<div style='background:#ffffff;border-radius:8px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:3px solid ").append(borderColor).append(";overflow:hidden;'>");
 
             // Section header
-            sb.append("<h2 style='color:#2c3e50;margin:0 0 4px 0;font-size:18px;'>");
-            if (!sectionLabel.isEmpty()) {
-                sb.append(sectionLabel).append(" &mdash; ");
-            }
+            sb.append("<div style='padding:14px 20px;background:").append(badgeBg).append(";border-bottom:1px solid #f0f0f0;'>");
+            sb.append("<span style='font-size:16px;font-weight:600;color:rgba(0,0,0,0.88);'>");
+            sb.append(sectionLabel).append(" &mdash; ");
             sb.append(HtmlUtils.htmlEscape(formatDateRu(date)));
-            sb.append("</h2>");
+            sb.append("</span></div>");
 
             if (emps.isEmpty()) {
-                sb.append("<p style='color:#95a5a6;font-style:italic;margin:12px 0 0 0;'>Нет именинников</p>");
+                sb.append("<div style='padding:16px 20px;'>");
+                sb.append("<p style='color:rgba(0,0,0,0.45);font-style:italic;margin:0;'>Нет именинников</p>");
+                sb.append("</div>");
             } else {
-                sb.append("<table style='width:100%;border-collapse:collapse;margin-top:12px;'>");
-                sb.append("<tr style='background:").append(sectionColor).append(";color:white;'>");
-                sb.append("<th style='padding:10px 12px;text-align:left;border-radius:6px 0 0 0;'>ФИО</th>");
-                sb.append("<th style='padding:10px 12px;text-align:left;'>Должность</th>");
-                sb.append("<th style='padding:10px 12px;text-align:left;border-radius:0 6px 0 0;'>Подразделение</th></tr>");
+                sb.append("<table style='width:100%;border-collapse:collapse;'>");
+                sb.append("<tr style='background:").append(headerBg).append(";'>");
+                sb.append("<th style='padding:10px 16px;text-align:left;color:").append(headerColor).append(";font-size:13px;font-weight:500;'>ФИО</th>");
+                sb.append("<th style='padding:10px 16px;text-align:left;color:").append(headerColor).append(";font-size:13px;font-weight:500;'>Должность</th>");
+                sb.append("<th style='padding:10px 16px;text-align:left;color:").append(headerColor).append(";font-size:13px;font-weight:500;'>Подразделение</th></tr>");
                 for (int i = 0; i < emps.size(); i++) {
                     Employee emp = emps.get(i);
-                    String bg = i % 2 == 0 ? "#f8f9fa" : "#ffffff";
+                    String bg = i % 2 == 0 ? "#fafafa" : "#ffffff";
                     sb.append("<tr style='background:").append(bg).append(";'>")
-                            .append("<td style='padding:10px 12px;border-bottom:1px solid #ecf0f1;'>\uD83C\uDF81 ")
+                            .append("<td style='padding:10px 16px;border-bottom:1px solid #f0f0f0;color:rgba(0,0,0,0.88);'>\uD83C\uDF81 ")
                             .append(HtmlUtils.htmlEscape(emp.getFullName())).append("</td>")
-                            .append("<td style='padding:10px 12px;border-bottom:1px solid #ecf0f1;'>")
-                            .append(HtmlUtils.htmlEscape(emp.getPosition() != null ? emp.getPosition() : "")).append("</td>")
-                            .append("<td style='padding:10px 12px;border-bottom:1px solid #ecf0f1;'>")
-                            .append(HtmlUtils.htmlEscape(emp.getDepartment() != null ? emp.getDepartment() : "")).append("</td>")
+                            .append("<td style='padding:10px 16px;border-bottom:1px solid #f0f0f0;color:rgba(0,0,0,0.65);'>")
+                            .append(HtmlUtils.htmlEscape(emp.getPosition() != null ? emp.getPosition() : "—")).append("</td>")
+                            .append("<td style='padding:10px 16px;border-bottom:1px solid #f0f0f0;color:rgba(0,0,0,0.65);'>")
+                            .append(HtmlUtils.htmlEscape(emp.getDepartment() != null ? emp.getDepartment() : "—")).append("</td>")
                             .append("</tr>");
                 }
                 sb.append("</table>");
@@ -172,8 +186,13 @@ public class EmailService {
             sb.append("</div>");
         }
 
+        sb.append("</div>");
+
         // Footer
-        sb.append("<p style='color:#95a5a6;font-size:12px;text-align:center;margin-top:20px;'>Автоматическая рассылка Birthday Notify</p>");
+        sb.append("<div style='text-align:center;padding:16px 20px 24px;'>");
+        sb.append("<p style='color:rgba(0,0,0,0.35);font-size:12px;margin:0;'>Автоматическая рассылка Alfa Birthday</p>");
+        sb.append("</div>");
+
         sb.append("</body></html>");
         return sb.toString();
     }

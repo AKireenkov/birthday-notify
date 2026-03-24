@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  alfa-birthday:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    volumes:
+      - ./data:/app/data
+      - ./sync:/app/sync
+    restart: unless-stopped

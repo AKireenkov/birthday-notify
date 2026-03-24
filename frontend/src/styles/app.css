@@ -1,0 +1,91 @@
+/* Minimal custom styles — Ant Design handles everything else */
+
+body {
+  margin: 0;
+  background: #f5f5f5;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  padding: 20px 24px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.app-header p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  opacity: 0.85;
+  color: #fff;
+}
+
+.app-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Birthday row highlight — Rec #1 */
+.birthday-row {
+  background: #fff1b8 !important;
+}
+
+.birthday-row td:first-child {
+  border-left: 3px solid #fa541c;
+}
+
+.birthday-row:hover td {
+  background: #ffe58f !important;
+}
+
+@keyframes pulse-tag {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.birthday-tag {
+  animation: pulse-tag 2s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Stats cards */
+.stat-card {
+  border-radius: 8px;
+  height: 100%;
+}
+
+.stat-card .ant-card-body {
+  padding: 20px;
+}
+
+/* Toolbar button styles — Rec #4 */
+.btn-test-email {
+  color: #fa8c16 !important;
+  border-color: #fa8c16 !important;
+}
+
+.btn-test-email:hover {
+  color: #d48806 !important;
+  border-color: #d48806 !important;
+  background: #fff7e6 !important;
+}
+
+.btn-sync {
+  color: #722ed1 !important;
+  border-color: #722ed1 !important;
+}
+
+.btn-sync:hover {
+  color: #531dab !important;
+  border-color: #531dab !important;
+  background: #f9f0ff !important;
+}

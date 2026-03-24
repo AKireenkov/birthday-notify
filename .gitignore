@@ -1,15 +1,37 @@
+# Environment
 .env
+
+# Java
+target/
+*.class
+data/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Sync
+sync/done/
+
+# IDE & OS
+.DS_Store
+.idea/
+*.iml
+.vscode/
+
+# Claude
+.claude/
+
+# Logs
+*.log
+birthday_notify.log*
+
+# Legacy Python
 *.pyc
 __pycache__/
-birthday_notify.log*
-employees.csv
-.DS_Store
 venv/
 .venv/
-target/
-data/
-sync/done/
-*.class
-.claude/
-*.log
+
+# Other
+employees.csv
 .mvn/wrapper/maven-wrapper.jar
