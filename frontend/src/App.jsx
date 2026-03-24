@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, message, Badge } from 'antd';
-import { GiftOutlined } from '@ant-design/icons';
+import { Notification } from '@alfalab/core-components-notification';
+import { Typography } from '@alfalab/core-components-typography';
+import { ButtonDesktop as Button } from '@alfalab/core-components-button/desktop';
+import { Divider } from '@alfalab/core-components-divider';
 import {
   getEmployees,
   createEmployee,
@@ -15,8 +17,6 @@ import Toolbar from './components/Toolbar';
 import EmployeeTable from './components/EmployeeTable';
 import EmployeeModal from './components/EmployeeModal';
 import CsvUploadModal from './components/CsvUploadModal';
-
-const { Header, Content } = Layout;
 
 function isBirthdayToday(birthDate) {
   const today = new Date();
@@ -33,44 +33,45 @@ export default function App() {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [csvModalOpen, setCsvModalOpen] = useState(false);
   const [showBirthdaysOnly, setShowBirthdaysOnly] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
+  const [actionsOpen, setActionsOpen] = useState(false);
+
+  const [notification, setNotification] = useState({ visible: false, title: '', badge: 'positive-checkmark' });
 
   const birthdayCount = employees.filter((e) => isBirthdayToday(e.birthDate)).length;
 
-  // Load employees on mount
+  const showNotification = useCallback((title, badge = 'positive-checkmark') => {
+    setNotification({ visible: true, title, badge });
+  }, []);
+
+  const hideNotification = useCallback(() => {
+    setNotification((n) => ({ ...n, visible: false }));
+  }, []);
+
   useEffect(() => {
     setLoading(true);
     getEmployees()
       .then(setEmployees)
-      .catch(() => messageApi.error('Не удалось загрузить сотрудников'))
+      .catch(() => showNotification('Не удалось загрузить сотрудников', 'negative-cross'))
       .finally(() => setLoading(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Filtered list
   const filtered = employees.filter((e) =>
     e.fullName.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Sort: birthday today first, then alphabetically
   const sorted = [...filtered].sort((a, b) => {
-    const now = new Date();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const todayMmDd = `${mm}-${dd}`;
-    const aBday = a.birthDate.slice(5) === todayMmDd;
-    const bBday = b.birthDate.slice(5) === todayMmDd;
+    const aBday = isBirthdayToday(a.birthDate);
+    const bBday = isBirthdayToday(b.birthDate);
     if (aBday && !bBday) return -1;
     if (!aBday && bBday) return 1;
     return a.fullName.localeCompare(b.fullName, 'ru');
   });
 
-  // Add
   const handleAdd = useCallback(() => {
     setEditingEmployee(null);
     setModalOpen(true);
   }, []);
 
-  // Keyboard shortcut Ctrl+N / Cmd+N — Rec #9
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
@@ -82,13 +83,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleAdd]);
 
-  // Edit
   const handleEdit = (emp) => {
     setEditingEmployee(emp);
     setModalOpen(true);
   };
 
-  // Save (add or update)
   const handleSave = async (values) => {
     if (editingEmployee) {
       try {
@@ -96,107 +95,138 @@ export default function App() {
         setEmployees((prev) =>
           prev.map((e) => (e.id === editingEmployee.id ? updated : e))
         );
-        messageApi.success('Данные обновлены');
+        showNotification('Данные обновлены');
         setModalOpen(false);
       } catch {
-        messageApi.error('Не удалось обновить данные');
+        showNotification('Не удалось обновить данные', 'negative-cross');
       }
     } else {
       try {
         const emp = await createEmployee(values);
         setEmployees((prev) => [...prev, emp]);
-        messageApi.success(`${emp.fullName} добавлен(а)`);
+        showNotification(`${emp.fullName} добавлен(а)`);
         setModalOpen(false);
       } catch {
-        messageApi.error('Не удалось добавить сотрудника');
+        showNotification('Не удалось добавить сотрудника', 'negative-cross');
       }
     }
   };
 
-  // Save and add another — Rec #8
   const handleSaveAndAddAnother = async (values) => {
     try {
       const emp = await createEmployee(values);
       setEmployees((prev) => [...prev, emp]);
-      messageApi.success(`${emp.fullName} добавлен(а)`);
-      // modal stays open, form is reset inside EmployeeModal
+      showNotification(`${emp.fullName} добавлен(а)`);
     } catch {
-      messageApi.error('Не удалось добавить сотрудника');
+      showNotification('Не удалось добавить сотрудника', 'negative-cross');
     }
   };
 
-  // Delete
   const handleDelete = async (emp) => {
     try {
       await deleteEmployee(emp.id);
       setEmployees((prev) => prev.filter((e) => e.id !== emp.id));
-      messageApi.success(`${emp.fullName} удален(а)`);
+      showNotification(`${emp.fullName} удален(а)`);
     } catch {
-      messageApi.error('Не удалось удалить сотрудника');
+      showNotification('Не удалось удалить сотрудника', 'negative-cross');
     }
   };
 
-  // CSV upload — Rec #5: return result for summary display
   const handleCsvUpload = async (file) => {
     try {
       const result = await uploadCsv(file);
       const fresh = await getEmployees();
       setEmployees(fresh);
-      messageApi.success(`CSV загружен: ${result.imported} сотрудник(ов) добавлено`);
-      return result; // returned to CsvUploadModal for summary display
+      showNotification(`CSV загружен: ${result.imported} сотрудник(ов)`);
+      return result;
     } catch {
-      messageApi.error('Не удалось загрузить CSV');
+      showNotification('Не удалось загрузить CSV', 'negative-cross');
       return null;
     }
   };
 
-  // Test email
   const handleSendTest = async () => {
+    setActionsOpen(false);
+    showNotification('Отправка тестового письма...', 'attention-alert');
     try {
-      messageApi.loading({ content: 'Отправка тестового письма...', key: 'test-email' });
       await sendTestEmail();
-      messageApi.success({ content: 'Тестовое письмо отправлено', key: 'test-email' });
+      showNotification('Тестовое письмо отправлено');
     } catch {
-      messageApi.error({ content: 'Не удалось отправить письмо', key: 'test-email' });
+      showNotification('Не удалось отправить письмо', 'negative-cross');
     }
   };
 
-  // Sync
   const handleSync = async () => {
+    setActionsOpen(false);
+    showNotification('Синхронизация...', 'attention-alert');
     try {
-      messageApi.loading({ content: 'Синхронизация...', key: 'sync' });
       await syncFromFolder();
       const fresh = await getEmployees();
       setEmployees(fresh);
-      messageApi.success({ content: 'Синхронизация завершена', key: 'sync' });
+      showNotification('Синхронизация завершена');
     } catch {
-      messageApi.error({ content: 'Ошибка синхронизации', key: 'sync' });
+      showNotification('Ошибка синхронизации', 'negative-cross');
     }
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {contextHolder}
-      <Header className="app-header" style={{ height: 'auto', lineHeight: 'normal' }}>
-        <div>
-          <h1>&#127874; Alfa Birthday</h1>
-          <p>Мониторинг дней рождения сотрудников</p>
-        </div>
-        {birthdayCount > 0 && (
-          <Badge count={birthdayCount} style={{ backgroundColor: '#fa541c' }}>
-            <GiftOutlined style={{ fontSize: 24, color: 'white' }} />
-          </Badge>
-        )}
-      </Header>
+    <div style={{ minHeight: '100vh', background: 'var(--color-light-bg-secondary)' }}>
+      <Notification
+        visible={notification.visible}
+        badge={notification.badge}
+        title={notification.title}
+        autoCloseDelay={3000}
+        onCloseTimeout={hideNotification}
+        onClickOutside={hideNotification}
+      />
 
-      <Content className="app-content">
+      <header className="app-header">
+        <div className="app-header-left">
+          <Typography.Title tag="h1" view="medium" color="static-primary-light" className="app-title">
+            Alfa Birthday
+          </Typography.Title>
+          <Typography.Text view="primary-small" color="static-primary-light" className="app-subtitle">
+            Мониторинг дней рождения сотрудников
+          </Typography.Text>
+        </div>
+        <div className="app-header-right">
+          <Button
+            view="primary"
+            size={40}
+            className="header-actions-btn"
+            onClick={() => setActionsOpen((v) => !v)}
+          >
+            Действия
+          </Button>
+        </div>
+      </header>
+
+      {/* Slide-down action panel */}
+      {actionsOpen && (
+        <>
+          <div className="actions-backdrop" onClick={() => setActionsOpen(false)} />
+          <div className="actions-panel">
+            <Button view="accent" size={48} block onClick={() => { handleAdd(); setActionsOpen(false); }}>
+              + Добавить сотрудника
+            </Button>
+            <Button view="secondary" size={48} block onClick={() => { setCsvModalOpen(true); setActionsOpen(false); }}>
+              Загрузить CSV
+            </Button>
+            <Divider />
+            <Button view="secondary" size={48} block onClick={handleSendTest}>
+              Отправить письмо вручную
+            </Button>
+            <Button view="secondary" size={48} block onClick={handleSync}>
+              Синхронизировать
+            </Button>
+          </div>
+        </>
+      )}
+
+      <main className="app-content">
         <StatsCards employees={employees} />
 
         <Toolbar
-          onAdd={handleAdd}
-          onUploadCsv={() => setCsvModalOpen(true)}
-          onSendTest={handleSendTest}
-          onSync={handleSync}
           search={search}
           onSearchChange={setSearch}
           showBirthdaysOnly={showBirthdaysOnly}
@@ -225,7 +255,7 @@ export default function App() {
           onUpload={handleCsvUpload}
           onCancel={() => setCsvModalOpen(false)}
         />
-      </Content>
-    </Layout>
+      </main>
+    </div>
   );
 }

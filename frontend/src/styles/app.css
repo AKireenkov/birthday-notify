@@ -1,91 +1,221 @@
-/* Minimal custom styles — Ant Design handles everything else */
+/* Alfa Birthday — layout & overrides on top of @alfalab/core-components */
 
 body {
   margin: 0;
-  background: #f5f5f5;
+  background: var(--color-light-bg-secondary);
 }
 
+/* ===== Header ===== */
 .app-header {
-  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
-  padding: 20px 24px;
-  color: #fff;
+  background: linear-gradient(135deg, #B71C1C 0%, #D32F2F 50%, #EF3124 100%);
+  padding: 20px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #fff;
+.app-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.app-header p {
-  margin: 4px 0 0;
-  font-size: 14px;
-  opacity: 0.85;
-  color: #fff;
+.app-title {
+  margin: 0 !important;
 }
 
+.app-subtitle {
+  opacity: 0.8;
+}
+
+.app-header-right {
+  position: relative;
+}
+
+/* Header actions button — inverted style on accent bg */
+.header-actions-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+.header-actions-btn:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* ===== Action panel (slide-down from header) ===== */
+.actions-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 900;
+}
+
+.actions-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  background: var(--color-light-bg-primary);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* ===== Layout ===== */
 .app-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
 }
 
-/* Birthday row highlight — Rec #1 */
+/* ===== Stats Row ===== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--color-light-bg-primary);
+  border-radius: var(--border-radius-12, 12px);
+  padding: 20px 24px;
+  border: 1px solid var(--color-light-border-secondary);
+  transition: box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Birthday stat card — accent border like the "Добавить" button */
+.stat-card--birthday {
+  border-color: var(--color-light-accent-primary);
+  border-width: 2px;
+  background: var(--color-light-specialbg-negative-transparent);
+  box-shadow: 0 2px 8px rgba(239, 49, 36, 0.12);
+}
+
+/* Delete action — destructive styling with border */
+.delete-action {
+  color: var(--color-light-text-negative, #ef3124) !important;
+  border: 1px solid var(--color-light-graphic-negative, #ef3124) !important;
+  border-radius: var(--border-radius-8, 8px) !important;
+}
+.delete-action:hover {
+  background: var(--color-light-specialbg-negative-transparent) !important;
+}
+
+/* Modal footer — vertical stack on narrow screens */
+.modal-footer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.stat-card-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-search {
+  min-width: 200px;
+}
+
+/* ===== Table overrides ===== */
+.table-wrapper {
+  background: var(--color-light-bg-primary);
+  border-radius: var(--border-radius-12, 12px);
+  border: 1px solid var(--color-light-border-secondary);
+  overflow: hidden;
+}
+
 .birthday-row {
-  background: #fff1b8 !important;
+  background: var(--color-light-specialbg-negative-transparent) !important;
 }
 
 .birthday-row td:first-child {
-  border-left: 3px solid #fa541c;
+  border-left: 3px solid var(--color-light-accent-primary);
 }
 
-.birthday-row:hover td {
-  background: #ffe58f !important;
+/* Status "Сегодня" — accent color like the button */
+.status-birthday {
+  background-color: var(--color-light-accent-primary) !important;
+  color: #fff !important;
 }
 
-@keyframes pulse-tag {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
+/* ===== Pagination ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
 }
 
-.birthday-tag {
-  animation: pulse-tag 2s ease-in-out infinite;
-  display: inline-block;
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-/* Stats cards */
-.stat-card {
-  border-radius: 8px;
-  height: 100%;
+/* ===== Empty state ===== */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--color-light-bg-primary);
+  border-radius: var(--border-radius-12, 12px);
+  border: 1px solid var(--color-light-border-secondary);
 }
 
-.stat-card .ant-card-body {
-  padding: 20px;
-}
-
-/* Toolbar button styles — Rec #4 */
-.btn-test-email {
-  color: #fa8c16 !important;
-  border-color: #fa8c16 !important;
-}
-
-.btn-test-email:hover {
-  color: #d48806 !important;
-  border-color: #d48806 !important;
-  background: #fff7e6 !important;
-}
-
-.btn-sync {
-  color: #722ed1 !important;
-  border-color: #722ed1 !important;
-}
-
-.btn-sync:hover {
-  color: #531dab !important;
-  border-color: #531dab !important;
-  background: #f9f0ff !important;
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .toolbar-search {
+    min-width: unset;
+  }
+  .app-header {
+    padding: 16px 20px;
+  }
+  .app-content {
+    padding: 16px;
+  }
+  .actions-panel {
+    width: 100%;
+  }
 }

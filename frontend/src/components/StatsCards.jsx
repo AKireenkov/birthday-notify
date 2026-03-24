@@ -1,7 +1,7 @@
 import React from 'react';
-import { Row, Col, Card, Statistic } from 'antd';
-import { TeamOutlined, GiftOutlined, CalendarOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { Typography } from '@alfalab/core-components-typography';
+import { Status } from '@alfalab/core-components-status';
 
 function isBirthdayToday(birthDate) {
   const today = new Date();
@@ -13,49 +13,47 @@ function isBirthdayToday(birthDate) {
 export default function StatsCards({ employees }) {
   const total = employees.length;
   const birthdayCount = employees.filter((e) => isBirthdayToday(e.birthDate)).length;
-  const todayFormatted = dayjs().format('DD MMMM YYYY');
-
-  const birthdayCardStyle = birthdayCount > 0
-    ? { borderColor: '#fa541c', background: '#fff2e8' }
-    : {};
+  const todayFormatted = dayjs().format('D MMMM YYYY');
 
   return (
-    <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-      <Col xs={24} sm={8}>
-        <Card className="stat-card" bordered={false}>
-          <Statistic
-            title="Всего сотрудников"
-            value={total}
-            prefix={<TeamOutlined />}
-            valueStyle={{ color: '#1677ff' }}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} sm={8}>
-        <Card className="stat-card" bordered={birthdayCount > 0} style={birthdayCardStyle}>
-          <Statistic
-            title="Дни рождения сегодня"
-            value={birthdayCount}
-            prefix={
-              <>
-                <GiftOutlined />
-                {birthdayCount > 0 && <span style={{ marginLeft: 4 }}>&#127881;</span>}
-              </>
-            }
-            valueStyle={{ color: birthdayCount > 0 ? '#fa541c' : '#8c8c8c' }}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} sm={8}>
-        <Card className="stat-card" bordered={false}>
-          <Statistic
-            title="Сегодня"
-            value={todayFormatted}
-            prefix={<CalendarOutlined />}
-            valueStyle={{ color: '#52c41a', fontSize: 20 }}
-          />
-        </Card>
-      </Col>
-    </Row>
+    <div className="stats-row">
+      <div className="stat-card">
+        <Typography.Text view="secondary-large" color="secondary">
+          Всего сотрудников
+        </Typography.Text>
+        <div className="stat-card-value">
+          <Typography.Title tag="div" view="small">
+            {total}
+          </Typography.Title>
+        </div>
+      </div>
+
+      <div className={`stat-card ${birthdayCount > 0 ? 'stat-card--birthday' : ''}`}>
+        <Typography.Text view="secondary-large" color="secondary">
+          Дни рождения сегодня
+        </Typography.Text>
+        <div className="stat-card-value">
+          <Typography.Title tag="div" view="small" color={birthdayCount > 0 ? 'negative' : undefined}>
+            {birthdayCount}
+          </Typography.Title>
+          {birthdayCount > 0 && (
+            <Status color="red" view="soft" size={24}>
+              Есть именинники!
+            </Status>
+          )}
+        </div>
+      </div>
+
+      <div className="stat-card">
+        <Typography.Text view="secondary-large" color="secondary">
+          Сегодня
+        </Typography.Text>
+        <div className="stat-card-value">
+          <Typography.Title tag="div" view="small">
+            {todayFormatted}
+          </Typography.Title>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,13 @@
-import React, { useMemo } from 'react';
-import { Table, Tag, Button, Tooltip, Popconfirm, Empty } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
+import { Table, THead, TBody, TRow, TCell, TSortableHeadCell, THeadCell } from '@alfalab/core-components-table';
+import { ButtonDesktop as Button } from '@alfalab/core-components-button/desktop';
+import { IconButtonDesktop as IconButton } from '@alfalab/core-components-icon-button/desktop';
+import { TagDesktop as Tag } from '@alfalab/core-components-tag/desktop';
+import { Status } from '@alfalab/core-components-status';
+import { Typography } from '@alfalab/core-components-typography';
+import { ModalDesktop as Modal } from '@alfalab/core-components-modal/desktop';
+import { Gap } from '@alfalab/core-components-gap';
 
 function isBirthdayToday(birthDate) {
   const today = new Date();
@@ -19,6 +25,23 @@ function daysUntilBirthday(dateStr) {
   return bd.diff(today, 'day');
 }
 
+const PAGE_SIZE = 10;
+
+// Simple edit/delete SVG icons
+const EditIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
+
 export default function EmployeeTable({
   employees,
   loading,
@@ -27,132 +50,206 @@ export default function EmployeeTable({
   hasSearch,
   showBirthdaysOnly,
 }) {
+  const [sortField, setSortField] = useState(null);
+  const [sortDesc, setSortDesc] = useState(false);
+  const [page, setPage] = useState(1);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
   const dataSource = useMemo(() => {
     if (!showBirthdaysOnly) return employees;
     return employees.filter((e) => isBirthdayToday(e.birthDate));
   }, [employees, showBirthdaysOnly]);
 
-  const departmentFilters = useMemo(() => {
-    const deps = [...new Set(employees.map((e) => e.department).filter(Boolean))];
-    return deps.sort((a, b) => a.localeCompare(b, 'ru')).map((d) => ({
-      text: d,
-      value: d,
-    }));
-  }, [employees]);
+  const sortedData = useMemo(() => {
+    if (!sortField) return dataSource;
+    return [...dataSource].sort((a, b) => {
+      const valA = a[sortField] || '';
+      const valB = b[sortField] || '';
+      const cmp = valA.localeCompare(valB, 'ru');
+      return sortDesc ? -cmp : cmp;
+    });
+  }, [dataSource, sortField, sortDesc]);
 
-  const columns = [
-    {
-      title: 'ФИО',
-      dataIndex: 'fullName',
-      key: 'fullName',
-      sorter: (a, b) => a.fullName.localeCompare(b.fullName, 'ru'),
-      ellipsis: true,
-      render: (text) => <Tooltip title={text}>{text}</Tooltip>,
-    },
-    {
-      title: 'Дата рождения',
-      dataIndex: 'birthDate',
-      key: 'birthDate',
-      width: 260,
-      sorter: (a, b) => a.birthDate.localeCompare(b.birthDate),
-      render: (date) => {
-        const formatted = dayjs(date).format('DD.MM.YYYY');
-        const birthday = isBirthdayToday(date);
-        const diff = daysUntilBirthday(date);
-        const upcoming = !birthday && diff > 0 && diff <= 7;
-        return (
-          <span>
-            {formatted}
-            {birthday && (
-              <span className="birthday-tag">
-                <Tag color="red" style={{ marginLeft: 8 }}>
-                  Сегодня!
-                </Tag>
-              </span>
-            )}
-            {upcoming && (
-              <Tag color="blue" style={{ marginLeft: 8 }}>
-                Через {diff} дн.
-              </Tag>
-            )}
-          </span>
-        );
-      },
-    },
-    {
-      title: 'Должность',
-      dataIndex: 'position',
-      key: 'position',
-      ellipsis: true,
-      render: (text) => <Tooltip title={text}>{text}</Tooltip>,
-    },
-    {
-      title: 'Подразделение',
-      dataIndex: 'department',
-      key: 'department',
-      filters: departmentFilters,
-      onFilter: (value, record) => record.department === value,
-      ellipsis: true,
-      render: (text) => <Tooltip title={text}>{text}</Tooltip>,
-    },
-    {
-      title: 'Действия',
-      key: 'actions',
-      width: 100,
-      align: 'center',
-      render: (_, record) => (
-        <span>
-          <Tooltip title="Редактировать">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => onEdit(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Удалить сотрудника?"
-            description={`Вы уверены, что хотите удалить ${record.fullName}?`}
-            onConfirm={() => onDelete(record)}
-            okText="Удалить"
-            cancelText="Отмена"
-            okButtonProps={{ danger: true }}
-          >
-            <Tooltip title="Удалить">
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Tooltip>
-          </Popconfirm>
-        </span>
-      ),
-    },
-  ];
+  const totalPages = Math.ceil(sortedData.length / PAGE_SIZE);
+  const pageData = sortedData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  React.useEffect(() => { setPage(1); }, [employees, showBirthdaysOnly]);
+
+  const handleSort = (field) => () => {
+    if (sortField === field) {
+      setSortDesc((d) => !d);
+    } else {
+      setSortField(field);
+      setSortDesc(false);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm) {
+      onDelete(deleteConfirm);
+      setDeleteConfirm(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="empty-state">
+        <Typography.Text view="primary-medium" color="secondary">Загрузка...</Typography.Text>
+      </div>
+    );
+  }
+
+  if (sortedData.length === 0) {
+    return (
+      <div className="empty-state">
+        <Typography.Text view="primary-large" color="secondary">
+          {hasSearch ? 'Сотрудники не найдены' : 'Нет данных о сотрудниках'}
+        </Typography.Text>
+      </div>
+    );
+  }
 
   return (
-    <Table
-      columns={columns}
-      dataSource={dataSource}
-      rowKey="id"
-      loading={loading}
-      pagination={{
-        pageSize: 10,
-        showSizeChanger: true,
-        showTotal: (total, range) => `${range[0]}-${range[1]} из ${total}`,
-      }}
-      rowClassName={(record) =>
-        isBirthdayToday(record.birthDate) ? 'birthday-row' : ''
-      }
-      locale={{
-        emptyText: (
-          <Empty
-            description={
-              hasSearch
-                ? 'Сотрудники не найдены'
-                : 'Нет данных о сотрудниках'
-            }
-          />
-        ),
-      }}
-      bordered
-      size="middle"
-    />
+    <>
+      <div className="table-wrapper">
+        <Table>
+          <THead>
+            <TSortableHeadCell
+              isSortedDesc={sortField === 'fullName' ? sortDesc : undefined}
+              onSort={handleSort('fullName')}
+            >
+              ФИО
+            </TSortableHeadCell>
+            <TSortableHeadCell
+              isSortedDesc={sortField === 'birthDate' ? sortDesc : undefined}
+              onSort={handleSort('birthDate')}
+            >
+              Дата рождения
+            </TSortableHeadCell>
+            <TSortableHeadCell
+              isSortedDesc={sortField === 'position' ? sortDesc : undefined}
+              onSort={handleSort('position')}
+            >
+              Должность
+            </TSortableHeadCell>
+            <TSortableHeadCell
+              isSortedDesc={sortField === 'department' ? sortDesc : undefined}
+              onSort={handleSort('department')}
+            >
+              Подразделение
+            </TSortableHeadCell>
+            <THeadCell width={120} textAlign="center">
+              Действия
+            </THeadCell>
+          </THead>
+          <TBody>
+            {pageData.map((emp) => {
+              const birthday = isBirthdayToday(emp.birthDate);
+              const diff = daysUntilBirthday(emp.birthDate);
+              const isTomorrow = !birthday && diff === 1;
+
+              return (
+                <TRow key={emp.id} className={birthday ? 'birthday-row' : ''}>
+                  <TCell>
+                    <Typography.Text view="primary-small" weight="medium">
+                      {emp.fullName}
+                    </Typography.Text>
+                  </TCell>
+                  <TCell>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {dayjs(emp.birthDate).format('DD.MM.YYYY')}
+                      {birthday && (
+                        <Status color="red" view="contrast" size={20} className="status-birthday">
+                          Сегодня
+                        </Status>
+                      )}
+                      {isTomorrow && (
+                        <Status color="orange" view="soft" size={20}>
+                          Завтра
+                        </Status>
+                      )}
+                    </span>
+                  </TCell>
+                  <TCell>
+                    <Typography.Text view="primary-small" color={emp.position ? undefined : 'tertiary'}>
+                      {emp.position || '—'}
+                    </Typography.Text>
+                  </TCell>
+                  <TCell>
+                    <Typography.Text view="primary-small" color={emp.department ? undefined : 'tertiary'}>
+                      {emp.department || '—'}
+                    </Typography.Text>
+                  </TCell>
+                  <TCell style={{ textAlign: 'center' }}>
+                    <IconButton
+                      icon={EditIcon}
+                      view="secondary"
+                      size={32}
+                      onClick={() => onEdit(emp)}
+                    />
+                    <IconButton
+                      icon={DeleteIcon}
+                      view="negative"
+                      size={32}
+                      onClick={() => setDeleteConfirm(emp)}
+                      style={{ marginLeft: 4 }}
+                    />
+                  </TCell>
+                </TRow>
+              );
+            })}
+          </TBody>
+        </Table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <Typography.Text view="secondary-large" color="secondary">
+            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, sortedData.length)} из {sortedData.length}
+          </Typography.Text>
+          <div className="pagination-controls">
+            <Button view="text" size={32} disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+              &lsaquo;
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <Button
+                key={p}
+                view={p === page ? 'accent' : 'text'}
+                size={32}
+                onClick={() => setPage(p)}
+              >
+                {p}
+              </Button>
+            ))}
+            <Button view="text" size={32} disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
+              &rsaquo;
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
+      <Modal
+        open={Boolean(deleteConfirm)}
+        onClose={() => setDeleteConfirm(null)}
+        size={500}
+        hasCloser={true}
+      >
+        <Modal.Header title="Удалить сотрудника?" />
+        <Modal.Content>
+          <Typography.Text view="primary-medium">
+            Вы уверены, что хотите удалить {deleteConfirm?.fullName}?
+          </Typography.Text>
+        </Modal.Content>
+        <Modal.Footer layout="space-between">
+          <Button view="transparent" size={48} onClick={confirmDelete} className="delete-action">
+            Удалить
+          </Button>
+          <Button view="secondary" size={48} onClick={() => setDeleteConfirm(null)}>
+            Отмена
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
