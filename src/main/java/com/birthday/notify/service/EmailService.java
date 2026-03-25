@@ -110,8 +110,8 @@ public class EmailService {
         sb.append("<!DOCTYPE html><html><head><meta charset='utf-8'></head>");
         sb.append("<body style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;max-width:700px;margin:0 auto;padding:0;background:#f5f5f5;'>");
 
-        // Header — blue gradient matching Ant Design web app
-        sb.append("<div style='background:linear-gradient(135deg,#1677ff 0%,#4096ff 100%);padding:28px 24px;text-align:center;border-radius:0 0 12px 12px;'>");
+        // Header — red gradient matching Alfa Birthday web app
+        sb.append("<div style='background:linear-gradient(135deg,#B71C1C 0%,#D32F2F 50%,#EF3124 100%);padding:28px 24px;text-align:center;border-radius:0 0 12px 12px;'>");
         sb.append("<h1 style='color:#ffffff;margin:0 0 6px 0;font-size:22px;font-weight:600;'>\uD83C\uDF82 Alfa Birthday</h1>");
         sb.append("<p style='color:rgba(255,255,255,0.85);margin:0;font-size:14px;'>Рассылка от ")
                 .append(today.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
@@ -131,23 +131,17 @@ public class EmailService {
             String badgeBg;
             if (date.equals(today)) {
                 sectionLabel = "\uD83C\uDF89 Сегодня";
-                borderColor = "#fa541c";
-                headerBg = "#fa541c";
-                headerColor = "#ffffff";
-                badgeBg = "#fff1b8";
+                borderColor = "#EF3124";
+                badgeBg = "#FFF1F0";
             } else if (date.equals(tomorrow)) {
                 sectionLabel = "\uD83D\uDD14 Завтра";
-                borderColor = "#1677ff";
-                headerBg = "#1677ff";
-                headerColor = "#ffffff";
-                badgeBg = "#e6f4ff";
+                borderColor = "#F57C00";
+                badgeBg = "#FFF8E1";
             } else {
                 int dow = date.getDayOfWeek().getValue();
                 sectionLabel = "\uD83D\uDCC5 " + WEEKDAYS_RU[dow];
-                borderColor = "#722ed1";
-                headerBg = "#722ed1";
-                headerColor = "#ffffff";
-                badgeBg = "#f9f0ff";
+                borderColor = "#F57C00";
+                badgeBg = "#FFF8E1";
             }
 
             sb.append("<div style='background:#ffffff;border-radius:8px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:3px solid ").append(borderColor).append(";overflow:hidden;'>");
@@ -165,10 +159,10 @@ public class EmailService {
                 sb.append("</div>");
             } else {
                 sb.append("<table style='width:100%;border-collapse:collapse;'>");
-                sb.append("<tr style='background:").append(headerBg).append(";'>");
-                sb.append("<th style='padding:10px 16px;text-align:left;color:").append(headerColor).append(";font-size:13px;font-weight:500;'>ФИО</th>");
-                sb.append("<th style='padding:10px 16px;text-align:left;color:").append(headerColor).append(";font-size:13px;font-weight:500;'>Должность</th>");
-                sb.append("<th style='padding:10px 16px;text-align:left;color:").append(headerColor).append(";font-size:13px;font-weight:500;'>Подразделение</th></tr>");
+                sb.append("<tr style='background:#F5F5F5;'>");
+                sb.append("<th style='padding:10px 16px;text-align:left;color:rgba(0,0,0,0.55);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #E8E8E8;'>ФИО</th>");
+                sb.append("<th style='padding:10px 16px;text-align:left;color:rgba(0,0,0,0.55);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #E8E8E8;'>Должность</th>");
+                sb.append("<th style='padding:10px 16px;text-align:left;color:rgba(0,0,0,0.55);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #E8E8E8;'>Подразделение</th></tr>");
                 for (int i = 0; i < emps.size(); i++) {
                     Employee emp = emps.get(i);
                     String bg = i % 2 == 0 ? "#fafafa" : "#ffffff";

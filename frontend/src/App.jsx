@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import dayjs from 'dayjs';
 import { Notification } from '@alfalab/core-components-notification';
 import { Typography } from '@alfalab/core-components-typography';
 import { ButtonDesktop as Button } from '@alfalab/core-components-button/desktop';
@@ -34,6 +35,8 @@ export default function App() {
   const [csvModalOpen, setCsvModalOpen] = useState(false);
   const [showBirthdaysOnly, setShowBirthdaysOnly] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const [notification, setNotification] = useState({ visible: false, title: '', badge: 'positive-checkmark' });
 
@@ -146,19 +149,19 @@ export default function App() {
   };
 
   const handleSendTest = async () => {
-    setActionsOpen(false);
-    showNotification('Отправка тестового письма...', 'attention-alert');
+    setSendingEmail(true);
     try {
       await sendTestEmail();
-      showNotification('Тестовое письмо отправлено');
+      showNotification('Письмо отправлено');
     } catch {
       showNotification('Не удалось отправить письмо', 'negative-cross');
+    } finally {
+      setSendingEmail(false);
     }
   };
 
   const handleSync = async () => {
-    setActionsOpen(false);
-    showNotification('Синхронизация...', 'attention-alert');
+    setSyncing(true);
     try {
       await syncFromFolder();
       const fresh = await getEmployees();
@@ -166,8 +169,12 @@ export default function App() {
       showNotification('Синхронизация завершена');
     } catch {
       showNotification('Ошибка синхронизации', 'negative-cross');
+    } finally {
+      setSyncing(false);
     }
   };
+
+  const todayFormatted = dayjs().format('D MMMM');
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-light-bg-secondary)' }}>
@@ -178,6 +185,7 @@ export default function App() {
         autoCloseDelay={3000}
         onCloseTimeout={hideNotification}
         onClickOutside={hideNotification}
+        position="bottom"
       />
 
       <header className="app-header">
@@ -186,7 +194,7 @@ export default function App() {
             Alfa Birthday
           </Typography.Title>
           <Typography.Text view="primary-small" color="static-primary-light" className="app-subtitle">
-            Мониторинг дней рождения сотрудников
+            {todayFormatted}
           </Typography.Text>
         </div>
         <div className="app-header-right">
@@ -206,18 +214,22 @@ export default function App() {
         <>
           <div className="actions-backdrop" onClick={() => setActionsOpen(false)} />
           <div className="actions-panel">
+            <Typography.Title tag="div" view="xsmall" style={{ marginBottom: 8 }}>
+              Действия
+            </Typography.Title>
             <Button view="accent" size={48} block onClick={() => { handleAdd(); setActionsOpen(false); }}>
               + Добавить сотрудника
+              <span className="shortcut-hint">Ctrl+N</span>
             </Button>
             <Button view="secondary" size={48} block onClick={() => { setCsvModalOpen(true); setActionsOpen(false); }}>
               Загрузить CSV
             </Button>
             <Divider />
-            <Button view="secondary" size={48} block onClick={handleSendTest}>
+            <Button view="secondary" size={48} block onClick={handleSendTest} loading={sendingEmail} disabled={sendingEmail}>
               Отправить письмо вручную
             </Button>
-            <Button view="secondary" size={48} block onClick={handleSync}>
-              Синхронизировать
+            <Button view="secondary" size={48} block onClick={handleSync} loading={syncing} disabled={syncing}>
+              Обновить из папки
             </Button>
           </div>
         </>
@@ -240,6 +252,8 @@ export default function App() {
           onDelete={handleDelete}
           hasSearch={search.length > 0}
           showBirthdaysOnly={showBirthdaysOnly}
+          onAdd={handleAdd}
+          onOpenCsv={() => setCsvModalOpen(true)}
         />
 
         <EmployeeModal

@@ -6,26 +6,61 @@ import { Typography } from '@alfalab/core-components-typography';
 import { Status } from '@alfalab/core-components-status';
 import { Gap } from '@alfalab/core-components-gap';
 
+function parsePreview(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter((l) => l.trim());
+      resolve({
+        totalLines: lines.length,
+        firstLines: lines.slice(0, 5),
+        fileName: file.name,
+        fileSize: (file.size / 1024).toFixed(1),
+      });
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+
 export default function CsvUploadModal({ open, onUpload, onCancel }) {
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleFile = async (file) => {
     if (!file || !file.name.endsWith('.csv')) return;
+    setSelectedFile(file);
+    const info = await parsePreview(file);
+    setPreview(info);
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!selectedFile) return;
     setUploading(true);
     setUploadResult(null);
     try {
-      const result = await onUpload(file);
+      const result = await onUpload(selectedFile);
       if (result) setUploadResult(result);
     } finally {
       setUploading(false);
+      setPreview(null);
+      setSelectedFile(null);
     }
   };
 
   const handleClose = () => {
     setUploadResult(null);
+    setPreview(null);
+    setSelectedFile(null);
     onCancel();
+  };
+
+  const handleBack = () => {
+    setPreview(null);
+    setSelectedFile(null);
   };
 
   return (
@@ -62,6 +97,34 @@ export default function CsvUploadModal({ open, onUpload, onCancel }) {
                 </Typography.Text>
               </>
             )}
+          </div>
+        ) : preview ? (
+          <div className="csv-preview">
+            <div className="csv-preview-header">
+              <Typography.Text view="primary-medium" weight="bold">
+                {preview.fileName}
+              </Typography.Text>
+              <Typography.Text view="secondary-medium" color="tertiary">
+                {preview.fileSize} КБ · {preview.totalLines} строк
+              </Typography.Text>
+            </div>
+            <Gap size={12} />
+            <div className="csv-preview-lines">
+              {preview.firstLines.map((line, i) => (
+                <div key={i} className="csv-preview-line">
+                  <span className="csv-preview-num">{i + 1}</span>
+                  <span className="csv-preview-text">{line}</span>
+                </div>
+              ))}
+              {preview.totalLines > 5 && (
+                <div className="csv-preview-line csv-preview-line--more">
+                  <span className="csv-preview-num">...</span>
+                  <Typography.Text view="secondary-small" color="tertiary">
+                    ещё {preview.totalLines - 5} строк
+                  </Typography.Text>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <>
@@ -101,13 +164,22 @@ export default function CsvUploadModal({ open, onUpload, onCancel }) {
           </>
         )}
       </Modal.Content>
-      {uploadResult && (
+      {uploadResult ? (
         <Modal.Footer>
           <Button view="accent" size={48} onClick={handleClose} block={true}>
             OK
           </Button>
         </Modal.Footer>
-      )}
+      ) : preview ? (
+        <Modal.Footer layout="space-between">
+          <Button view="outlined" size={48} onClick={handleBack}>
+            Назад
+          </Button>
+          <Button view="accent" size={48} onClick={handleConfirmUpload} loading={uploading}>
+            Загрузить {preview.totalLines} строк
+          </Button>
+        </Modal.Footer>
+      ) : null}
     </Modal>
   );
 }

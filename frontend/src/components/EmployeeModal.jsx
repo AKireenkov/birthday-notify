@@ -28,7 +28,14 @@ export default function EmployeeModal({ open, employee, onSave, onSaveAndAddAnot
   const validate = () => {
     const errs = {};
     if (!form.fullName.trim()) errs.fullName = 'Введите ФИО сотрудника';
-    if (!form.birthDate) errs.birthDate = 'Выберите дату рождения';
+    if (!form.birthDate) {
+      errs.birthDate = 'Выберите дату рождения';
+    } else {
+      const bd = new Date(form.birthDate);
+      const today = new Date();
+      if (bd > today) errs.birthDate = 'Дата рождения не может быть в будущем';
+      if (bd < new Date('1920-01-01')) errs.birthDate = 'Проверьте дату рождения';
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -87,11 +94,14 @@ export default function EmployeeModal({ open, employee, onSave, onSaveAndAddAnot
         <Gap size={16} />
 
         <div className="date-input-wrapper">
-          <label className="date-input-label">Дата рождения</label>
+          <label className="date-input-label" htmlFor="birth-date-input">Дата рождения</label>
           <input
+            id="birth-date-input"
             type="date"
             className="date-input-native"
             value={form.birthDate}
+            min="1920-01-01"
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => {
               setForm((f) => ({ ...f, birthDate: e.target.value }));
               if (errors.birthDate) setErrors((er) => ({ ...er, birthDate: undefined }));

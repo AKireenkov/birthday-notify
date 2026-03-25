@@ -71,6 +71,16 @@ body {
   to { transform: translateX(0); }
 }
 
+/* Keyboard shortcut hint inside button */
+.shortcut-hint {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
 /* ===== Layout ===== */
 .app-content {
   max-width: 1200px;
@@ -78,35 +88,74 @@ body {
   padding: 24px;
 }
 
-/* ===== Stats Row ===== */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: var(--color-light-bg-primary);
+/* ===== Birthday Banner ===== */
+.birthday-banner {
   border-radius: var(--border-radius-12, 12px);
   padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.birthday-banner--active {
+  background: linear-gradient(135deg, #B71C1C 0%, #D32F2F 50%, #EF3124 100%);
+  box-shadow: 0 4px 16px rgba(239, 49, 36, 0.2);
+  animation: bannerAppear 0.4s ease-out;
+}
+
+.birthday-banner--empty {
+  background: var(--color-light-bg-primary);
   border: 1px solid var(--color-light-border-secondary);
-  transition: box-shadow 0.2s;
+  justify-content: space-between;
 }
 
-.stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+.birthday-banner-icon {
+  font-size: 36px;
+  flex-shrink: 0;
 }
 
-/* Birthday stat card — accent border like the "Добавить" button */
-.stat-card--birthday {
-  border-color: var(--color-light-accent-primary);
-  border-width: 2px;
-  background: var(--color-light-specialbg-negative-transparent);
-  box-shadow: 0 2px 8px rgba(239, 49, 36, 0.12);
+.birthday-banner-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-/* Delete action — destructive styling with border */
+.birthday-banner-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.birthday-banner-person {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.birthday-banner-position {
+  opacity: 0.75;
+}
+
+.birthday-banner-separator {
+  display: block;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 4px 0;
+}
+
+.birthday-banner-count {
+  flex-shrink: 0;
+}
+
+@keyframes bannerAppear {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Delete action — destructive styling with border ===== */
 .delete-action {
   color: var(--color-light-text-negative, #ef3124) !important;
   border: 1px solid var(--color-light-graphic-negative, #ef3124) !important;
@@ -172,13 +221,6 @@ body {
   margin-top: 4px;
 }
 
-.stat-card-value {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-}
-
 /* ===== Toolbar ===== */
 .toolbar {
   display: flex;
@@ -216,6 +258,16 @@ body {
   border-left: 3px solid var(--color-light-accent-primary);
 }
 
+/* Birthday row subtle glow animation */
+.birthday-row--animated {
+  animation: birthdayGlow 3s ease-in-out infinite;
+}
+
+@keyframes birthdayGlow {
+  0%, 100% { box-shadow: inset 0 0 0 rgba(239, 49, 36, 0); }
+  50% { box-shadow: inset 0 0 12px rgba(239, 49, 36, 0.06); }
+}
+
 /* Status "Сегодня" — accent color like the button */
 .status-birthday {
   background-color: var(--color-light-accent-primary) !important;
@@ -245,11 +297,70 @@ body {
   border: 1px solid var(--color-light-border-secondary);
 }
 
+.empty-state--onboarding {
+  padding: 64px 24px;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ===== CSV Preview ===== */
+.csv-preview-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.csv-preview-lines {
+  background: var(--color-light-bg-secondary);
+  border-radius: var(--border-radius-8, 8px);
+  border: 1px solid var(--color-light-border-secondary);
+  overflow: hidden;
+}
+
+.csv-preview-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-light-border-secondary);
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.csv-preview-line:last-child {
+  border-bottom: none;
+}
+
+.csv-preview-line--more {
+  font-family: inherit;
+}
+
+.csv-preview-num {
+  color: var(--color-light-text-tertiary);
+  min-width: 24px;
+  text-align: right;
+  font-size: 12px;
+}
+
+.csv-preview-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-light-text-primary);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .stats-row {
-    grid-template-columns: 1fr;
-  }
   .toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -265,5 +376,15 @@ body {
   }
   .actions-panel {
     width: 100%;
+  }
+  .birthday-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .birthday-banner--empty {
+    flex-direction: column;
+  }
+  .empty-state-actions {
+    flex-direction: column;
   }
 }

@@ -49,6 +49,8 @@ export default function EmployeeTable({
   onDelete,
   hasSearch,
   showBirthdaysOnly,
+  onAdd,
+  onOpenCsv,
 }) {
   const [sortField, setSortField] = useState(null);
   const [sortDesc, setSortDesc] = useState(false);
@@ -99,11 +101,36 @@ export default function EmployeeTable({
     );
   }
 
+  if (sortedData.length === 0 && !hasSearch && !showBirthdaysOnly) {
+    return (
+      <div className="empty-state empty-state--onboarding">
+        <div className="empty-state-icon">📋</div>
+        <Typography.Title tag="div" view="xsmall" color="secondary">
+          Список сотрудников пуст
+        </Typography.Title>
+        <Gap size={8} />
+        <Typography.Text view="primary-medium" color="tertiary">
+          Добавьте сотрудников вручную или загрузите список из CSV файла
+        </Typography.Text>
+        <Gap size={24} />
+        <div className="empty-state-actions">
+          <Button view="accent" size={48} onClick={onAdd}>
+            + Добавить сотрудника
+          </Button>
+          <Button view="secondary" size={48} onClick={onOpenCsv}>
+            Загрузить CSV
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (sortedData.length === 0) {
     return (
       <div className="empty-state">
+        <div className="empty-state-icon">🔍</div>
         <Typography.Text view="primary-large" color="secondary">
-          {hasSearch ? 'Сотрудники не найдены' : 'Нет данных о сотрудниках'}
+          {hasSearch ? 'Сотрудники не найдены' : 'Именинников сегодня нет'}
         </Typography.Text>
       </div>
     );
@@ -112,7 +139,7 @@ export default function EmployeeTable({
   return (
     <>
       <div className="table-wrapper">
-        <Table>
+        <Table stickyHeader>
           <THead>
             <TSortableHeadCell
               isSortedDesc={sortField === 'fullName' ? sortDesc : undefined}
@@ -149,7 +176,7 @@ export default function EmployeeTable({
               const isTomorrow = !birthday && diff === 1;
 
               return (
-                <TRow key={emp.id} className={birthday ? 'birthday-row' : ''}>
+                <TRow key={emp.id} className={birthday ? 'birthday-row birthday-row--animated' : ''}>
                   <TCell>
                     <Typography.Text view="primary-small" weight="medium">
                       {emp.fullName}
@@ -186,6 +213,7 @@ export default function EmployeeTable({
                       view="secondary"
                       size={32}
                       onClick={() => onEdit(emp)}
+                      title="Редактировать"
                     />
                     <IconButton
                       icon={DeleteIcon}
@@ -193,6 +221,7 @@ export default function EmployeeTable({
                       size={32}
                       onClick={() => setDeleteConfirm(emp)}
                       style={{ marginLeft: 4 }}
+                      title="Удалить"
                     />
                   </TCell>
                 </TRow>
